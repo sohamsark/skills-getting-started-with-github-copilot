@@ -32,3 +32,17 @@ async def test_signup_duplicate():
         response = await ac.post(f"/activities/{activity}/signup?email={test_email}")
     assert response.status_code == 400
     assert "already signed up" in response.text
+
+@pytest.mark.asyncio
+async def test_signup_full_activity():
+    activity = "Math Olympiad"
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Sign up max participants
+        for i in range(10):
+            email = f"user{i}@mergington.edu"
+            response = await ac.post(f"/activities/{activity}/signup?email={email}")
+            assert response.status_code == 200
+        # Try to sign up one more
+        response = await ac.post(f"/activities/{activity}/signup?email=extra@mergington.edu")
+    assert response.status_code == 400
+    assert "Activity is full" in response.text
